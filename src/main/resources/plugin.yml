@@ -1,0 +1,79 @@
+name: MSG
+version: 1.9
+main: me.jdog.msg.Main
+author: Muricans
+commands:
+  msg:
+    usage: /<command> <player> <args>
+    permission: msg.msg
+    permission-message: §cNo permission.
+    aliases: [m, t, tell]
+    description: Message a player.
+  reply:
+    usage: /<command> <args>
+    permission: msg.reply
+    permission-message: §cNo permission.
+    aliases: [r]
+    description: Reply to your last message.
+  message:
+    usage: /<command> <args>
+    permission: msg.message
+    permission-message: §cNo permission.
+    description: Message plugin command.
+    aliases: [msgplug, msgplugin]
+  mhelp:
+    usage: /<command>
+    permission-message: §cNo permission.
+    description: Message help.
+  staffchat:
+    usage: /<command>
+    description: Enter staffchat mode.
+    permission: msg.staffchat
+    permission-message: §cNo permission.
+    aliases: [sc]
+  moptions:
+    usage: /<command> <args>
+    description: Options for the MSG plugin.
+    permission: msg.options
+    permission-message: §cNo permission.
+    aliases: [mo]
+  mpanel:
+    usage: /<command>
+    description: Options as gui form.
+    permission: msg.options.gui
+    permission-message: §cNo permission.
+    aliases: [mp]
+  togglechat:
+    usage: /<command>
+    description: Mute the chat.
+    permission: msg.chat.toggle
+    permission-message: §cNo permission.
+    aliases: [tc, tchat]
+permissions:
+  msg.chat.*:
+    description: All chat commands.
+    default: op
+    children:
+      msg.chat.toggle: true
+      msg.chat.talk: true
+  msg.chat.talk:
+    description: Talk when chat is muted.
+    default: op
+  msg.options.*:
+    description: All option commands.
+    default: op
+    children:
+      msg.options: true
+      msg.options.gui: true
+  msg.user:
+    description: User commands.
+    default: true
+    children:
+      msg.msg: true
+      msg.reply: true
+  msg.help:
+    description: Help for message permission.
+    default: true
+  msg.staffchat.see:
+    description: See the staffchat.
+    default: op
