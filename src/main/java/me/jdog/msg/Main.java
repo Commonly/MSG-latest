@@ -1,10 +1,15 @@
 package me.jdog.msg;
 
-import me.jdog.msg.gui.GuiManager;
+import me.jdog.msg.gui.GuiPanel;
+import me.jdog.msg.other.Updater;
 import me.jdog.msg.other.commands.*;
 import me.jdog.msg.other.config.DataManager;
 import me.jdog.msg.other.events.*;
 import me.jdog.msg.other.network.ServerUtils;
+import me.jdog.murapi.api.Color;
+import me.jdog.murapi.api.cmd.CMDManager;
+import me.jdog.murapi.api.gui.GuiManager;
+import org.apache.commons.io.IOUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -13,13 +18,22 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
 public class Main extends JavaPlugin {
+    private static Main instance;
+    @Deprecated
+    public static Main getInstance() {
+        return instance;
+    }
 
     public ServerUtils serverUtils = ServerUtils.getInstance();
     public DataManager dataManager = DataManager.getInstance();
@@ -27,12 +41,12 @@ public class Main extends JavaPlugin {
     private volatile boolean allowChat = true;
 
     public void MessageAPI(Player target, String msg) {
-        msg = ChatColor.translateAlternateColorCodes('&', msg);
+        msg = Color.addColor(msg);
         target.sendMessage(msg);
     }
 
     public void MessageAPI(CommandSender sender, String msg) {
-        msg = ChatColor.translateAlternateColorCodes('&', msg);
+        msg = Color.addColor(msg);
         sender.sendMessage(msg);
     }
 
@@ -41,9 +55,37 @@ public class Main extends JavaPlugin {
         Bukkit.getServer().broadcastMessage(msg);
     }
 
+    public boolean depend() {
+        if(getServer().getPluginManager().getPlugin("murAPI")==null) {
+            return false;
+        } else {
+            return false;
+        }
+    }
+
     @Override
     public void onEnable() {
+        instance = this;
+        if(depend()) {
+            getLogger().severe("murAPI not found! Download it here: https://www.spigotmc.org/resources/murapi.32116/");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        Object[] updates = Updater.getLastUpdate();
+        getLogger().info("Checking for updates...");
+        if(updates.length == 2) {
+            getLogger().info("Update found for MSG! https://www.spigotmc.org/resources/msg-tested-on-1-8-1-7-10-1-10.31708/updates");
+        } else {
+            getLogger().info("No updates found! All up to date.");
+        }
         Logger logger = this.getLogger();
+
+        GuiManager.registerGui(0, new GuiPanel("Message Panel", 27));
+        CMDManager.registerCommand(1, new GuiCommand());
+        CMDManager.registerCommand(2, new Vote());
+
+        getCommand("mpanel").setExecutor(new CMDManager());
+        getCommand("vote").setExecutor(new CMDManager());
 
         this.eventList();
         this.commandList();
@@ -61,6 +103,7 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        instance = null;
         Logger logger = this.getLogger();
 
         logger.info("Message has been disabled!");
@@ -69,23 +112,17 @@ public class Main extends JavaPlugin {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("msg")) {
-            if (!(sender instanceof Player)) {
-                sender.sendMessage("Command can only be used by a player.");
-                return true;
-            }
-            Player p = (Player) sender;
-            String noargsMsg = ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("msg.noargsmsg"));
+            String noargsMsg = Color.addColor("msg.noargsmsg", this);
             if (args.length == 0) {
-                this.MessageAPI(p, noargsMsg);
+                this.MessageAPI(sender, noargsMsg);
                 return true;
             }
 
             if (args.length >= 2) {
-                String notonlineMsg = ChatColor.translateAlternateColorCodes('&',
-                        this.getConfig().getString("msg.notonlinemsg"));
+                String notonlineMsg = Color.addColor("msg.notonlinemsg", this);
                 Player target = Bukkit.getServer().getPlayer(args[0]);
                 if (target == null) {
-                    this.MessageAPI(p, notonlineMsg);
+                    this.MessageAPI(sender, notonlineMsg);
                     return true;
                 }
 
@@ -109,16 +146,12 @@ public class Main extends JavaPlugin {
                     ++m2;
                 }
 
-                String senderMsg = ChatColor.translateAlternateColorCodes('&',
-                        this.getConfig().getString("msg.sendermsg").replace("%target%", target.getName())
-                                .replace("%sender%", sender.getName()).replace("%msg%", msg2));
-                String targetMsg = ChatColor.translateAlternateColorCodes('&',
-                        this.getConfig().getString("msg.targetmsg").replace("%sender%", sender.getName())
-                                .replace("%target%", target.getName()).replace("%msg%", msg2));
+                String senderMsg = Color.addColor("msg.sendermsg", this).replace("%target%", target.getName()).replace("%sender%", sender.getName()).replace("%msg%", msg2);
+                String targetMsg = Color.addColor("msg.targetmsg", this).replace("%target%", target.getName()).replace("%sender%", sender.getName()).replace("%msg%", msg2);
                 callEvent(new EventMessageHandler(target));
                 this.MessageAPI(target, targetMsg);
-                this.reply.put(p.getName(), target.getName());
-                this.reply.put(target.getName(), p.getName());
+                this.reply.put(sender.getName(), target.getName());
+                this.reply.put(target.getName(), sender.getName());
                 callEvent(new EventMessageHandler(sender));
                 this.MessageAPI(sender, senderMsg);
                 return true;
@@ -126,12 +159,7 @@ public class Main extends JavaPlugin {
         }
 
         if (cmd.getName().equalsIgnoreCase("reply")) {
-            if (!(sender instanceof Player)) {
-                sender.sendMessage("Command can only be used by a player.");
-                return true;
-            }
-
-            String noargsRep = ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("msg.noargsreply"));
+            String noargsRep = Color.addColor("msg.noargsreply", this);
             if (args.length == 0) {
                 this.MessageAPI(sender, noargsRep);
                 return true;
@@ -149,8 +177,7 @@ public class Main extends JavaPlugin {
                     ++target;
                 }
 
-                String notonlineRep = ChatColor.translateAlternateColorCodes('&',
-                        this.getConfig().getString("msg.notonlinereply"));
+                String notonlineRep = Color.addColor("msg.notonlinereply", this);
                 if(!reply.containsKey(sender.getName())) {
                     this.MessageAPI(sender, notonlineRep);
                     return true;
@@ -161,11 +188,8 @@ public class Main extends JavaPlugin {
                     return true;
                 }
 
-                String replyMsg = ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("msg.replymsg")
-                        .replace("%sender%", sender.getName()).replace("%target%", r.getName()).replace("%msg%", msg));
-                String replysenderMsg = ChatColor.translateAlternateColorCodes('&',
-                        this.getConfig().getString("msg.replysendermsg").replace("%target%", r.getName())
-                                .replace("%sender%", sender.getName()).replace("%msg%", msg));
+                String replyMsg = Color.addColor("msg.replymsg", this).replace("%sender%", sender.getName()).replace("%target%", r.getName()).replace("%msg%", msg);
+                String replysenderMsg = Color.addColor("msg.replysendermsg", this).replace("%sender%", sender.getName()).replace("%target%", r.getName()).replace("%msg%", msg);
                 callEvent(new EventMessageHandler(r));
                 this.MessageAPI(r, replyMsg);
                 callEvent(new EventMessageHandler(sender));
@@ -205,8 +229,8 @@ public class Main extends JavaPlugin {
         this.getCommand("message").setExecutor(new reload(this));
         this.getCommand("staffchat").setExecutor(new StaffChat(this));
         this.getCommand("moptions").setExecutor(new Options(this));
-        this.getCommand("mpanel").setExecutor(new GuiCommand(this));
         this.getCommand("togglechat").setExecutor(new ToggleChat(this));
+        //this.getCommand("socialspy").setExecutor(new SocialSpy(this));
     }
 
     private void eventList() {
@@ -217,7 +241,9 @@ public class Main extends JavaPlugin {
         pm.registerEvents(new EventMessage(this), this);
         pm.registerEvents(new JoinJSON(this), this);
         pm.registerEvents(new EventDeath(this), this);
-        pm.registerEvents(new GuiManager(), this);
+        pm.registerEvents(new EventSign(), this);
+        pm.registerEvents(new EventInteract(), this);
+        //pm.registerEvents(new EventSpy(this), this);
     }
 
     private void callEvent(Event event) {

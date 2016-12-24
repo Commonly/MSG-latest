@@ -1,6 +1,7 @@
 package me.jdog.msg.other.events;
 
 import me.jdog.msg.Main;
+import me.jdog.murapi.api.Color;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -28,7 +29,7 @@ public class EventDeath implements Listener {
 
         if (p instanceof Player && k instanceof Player) {
 
-            String deathMessage = ChatColor.translateAlternateColorCodes('&', plugin.getConfig().getString("death.death-message").replace("%killer%", k.getName()).replace("%player%", p.getName()));
+            String deathMessage = Color.addColor("death.death-message").replace("%killer%", k.getName()).replace("%player%", p.getName());
 
             if (p.isDead()) {
                 e.setDeathMessage(null);

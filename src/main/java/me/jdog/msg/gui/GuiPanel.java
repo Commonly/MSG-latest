@@ -1,5 +1,6 @@
 package me.jdog.msg.gui;
 
+import me.jdog.murapi.api.gui.GuiBase;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

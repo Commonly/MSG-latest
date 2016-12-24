@@ -1,27 +1,24 @@
 package me.jdog.msg.other.commands;
 
-import me.jdog.msg.Main;
-import me.jdog.msg.gui.GuiManager;
+import me.jdog.murapi.api.cmd.CMD;
+import me.jdog.murapi.api.gui.GuiManager;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class GuiCommand implements CommandExecutor {
+public class GuiCommand extends CMD {
 
-    Main plugin;
-
-    public GuiCommand(Main pl) {
-        plugin = pl;
+    public GuiCommand() {
+        super("mpanel");
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (cmd.getName().equalsIgnoreCase("mpanel") && sender instanceof Player) {
-            Player p = (Player) sender;
-            p.openInventory(GuiManager.getGui(0).inventory);
+    public boolean execute(CommandSender sender, Command command, String label, String[] args) {
+        if(!(sender instanceof Player)) {
+            return true;
         }
-        return true;
+        Player p = (Player) sender;
+        p.openInventory(GuiManager.getGui(0).inventory);
+        return false;
     }
-
 }

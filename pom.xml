@@ -6,8 +6,9 @@
 
     <groupId>me.jdog.msg</groupId>
     <artifactId>msg</artifactId>
-    <version>1.9-pre</version>
+    <version>2.2-pre</version>
     <name>MSG</name>
+    <packaging>jar</packaging>
     <build>
         <finalName>MSG</finalName>
         <sourceDirectory>src/main/java</sourceDirectory>
@@ -42,8 +43,18 @@
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
+        <repository>
+            <id>murapi-repo</id>
+            <url>http://muricans.ml/repo/</url>
+        </repository>
     </repositories>
     <dependencies>
+        <dependency>
+            <groupId>me.jdog.murapi</groupId>
+            <artifactId>mur-api</artifactId>
+            <version>1.2-pre</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
@@ -55,6 +66,11 @@
             <artifactId>bukkit</artifactId>
             <version>1.10.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.5</version>
         </dependency>
     </dependencies>
 </project>

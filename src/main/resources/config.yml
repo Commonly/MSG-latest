@@ -9,11 +9,13 @@ msg: # MSG Options
   notonlinemsg: '&cThat player is not online! Usage: /msg <player> <msg>' # Not online [msg]
   sendingtoself: '&cYou cannot message yourself silly! Usage: /msg <player> <msg>' # Sending to self
 use-staff-chat: true # Use the staff chat. [true or false]
+use-staff-chat-actionbar: true # Use the staff chat actionbar. [true or false]
 staff-chat-not-enabled: '&fUnknown command. Type "/help" for help.' # If the above is set to false then when the user exucutes /sc show them this.
-staffchat: # Staffchat options 
+staffchat: # Staffchat options
   enabled: '&c&l[&r&fSC&c&l]&r&7 StaffChat has been enabled!' # SC enabled
   disabled: '&c&l[&r&fSC&c&l]&r&7 StaffChat has been disabled!' # SC disabled
   format: '&c&l[&r&fSC&c&l]&r&7 %player%&b:&f %msg%' # SC format
+  actionbar-format: '&c%player%:&f %msg%' # The actionbar format if use-staff-chat-actionbar is true.
 chat: # Chat options
   disabled: '&c&lChat was disabled by %sender%!' # Chat disabled
   enabled: '&c&lChat was enabled by %sender%!' # Chat enabled
@@ -25,3 +27,8 @@ json: # JSON options
 death: # Death message settings
   use: true # Use the custom death message
   death-message: '&e%player% &cwas killed by &e%killer%&c!' # The death message if above is true
+voting:
+  header: '&f===================' # Voting header
+  links: # Voting links
+    - '&chttp://muricans.ml'
+  footer: '&f===================' # Voting footer

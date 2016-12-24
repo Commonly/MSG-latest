@@ -1,8 +1,12 @@
 name: MSG
-version: 1.9
+version: 2.2
 main: me.jdog.msg.Main
 author: Muricans
 commands:
+  vote:
+    usage: /<command>
+    permission: msg.vote
+    permission-message: §cNo permission.
   msg:
     usage: /<command> <player> <args>
     permission: msg.msg
@@ -26,7 +30,7 @@ commands:
     permission-message: §cNo permission.
     description: Message help.
   staffchat:
-    usage: /<command>
+    usage: /<command> [msg]
     description: Enter staffchat mode.
     permission: msg.staffchat
     permission-message: §cNo permission.
@@ -50,6 +54,13 @@ commands:
     permission-message: §cNo permission.
     aliases: [tc, tchat]
 permissions:
+  msg.staffchat.*:
+    description: All staffchat permissions.
+    default: op
+    children:
+      msg.staffchat.see: true
+      msg.staffchat.actionbar: true
+      msg.staffchat: true
   msg.chat.*:
     description: All chat commands.
     default: op
@@ -71,9 +82,25 @@ permissions:
     children:
       msg.msg: true
       msg.reply: true
+      msg.vote: true
   msg.help:
     description: Help for message permission.
     default: true
   msg.staffchat.see:
     description: See the staffchat.
     default: op
+  msg.staffchat.actionbar:
+    description: See an actionbar if the config value for it is true.
+    default: op
+  msg.sign.create:
+    description: Create MSG signs
+    default: op
+  msg.sign.interact:
+    description: Interact with MSG signs
+    default: op
+  msg.sign.*:
+    description: All MSG sign permissions.
+    default: op
+    children:
+      msg.sign.create: true
+      msg.sign.interact: true

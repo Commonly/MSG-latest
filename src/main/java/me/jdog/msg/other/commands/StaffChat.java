@@ -1,18 +1,23 @@
 package me.jdog.msg.other.commands;
 
+import com.connorlinfoot.bountifulapi.Actionbar;
 import me.jdog.msg.Main;
+import me.jdog.murapi.api.Color;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class StaffChat implements CommandExecutor {
 
-    public static ArrayList<Player> chat = new ArrayList<Player>();
-    public static ArrayList<Player> sc = new ArrayList<Player>();
+    public static ArrayList<String> chat = new ArrayList<String>();
+    public static ArrayList<String> sc = new ArrayList<String>();
     Main plugin;
     public StaffChat(Main pl) {
         plugin = pl;
@@ -20,32 +25,51 @@ public class StaffChat implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        String scEnabled = ChatColor.translateAlternateColorCodes('&',
-                plugin.getConfig().getString("staffchat.enabled"));
-        String scDisabled = ChatColor.translateAlternateColorCodes('&',
-                plugin.getConfig().getString("staffchat.disabled"));
-        String notEnabled = ChatColor.translateAlternateColorCodes('&',
-                plugin.getConfig().getString("staff-chat-not-enabled").replace("%player%", sender.getName()));
-        Player p = (Player) sender;
+        String scEnabled = Color.addColor("staffchat.enabled", plugin);
+        String scDisabled = Color.addColor("staffchat.disabled", plugin);
+        String notEnabled = Color.addColor("staff-chat-not-enabled", plugin).replace("%player%", sender.getName());
         if (cmd.getName().equalsIgnoreCase("staffchat")) {
-            if (!(sender instanceof Player)) {
-                sender.sendMessage("Command can only be used by a player.");
+            if (args.length == 0 && sender instanceof Player) {
+                if (!sc.contains(sender.getName()) && plugin.getConfig().getBoolean("use-staff-chat") == true) {
+                    sc.add(sender.getName());
+                    chat.add(sender.getName());
+                    plugin.MessageAPI(sender, scEnabled);
+                    return true;
+                }
+                if (plugin.getConfig().getBoolean("use-staff-chat") == true) {
+                    sc.remove(sender.getName());
+                    chat.remove(sender.getName());
+                    plugin.MessageAPI(sender, scDisabled);
+                    return true;
+                } else {
+                    sender.sendMessage(notEnabled);
+                }
                 return true;
             }
-            if (!sc.contains(p) && plugin.getConfig().getBoolean("use-staff-chat") == true) {
-                sc.add(p);
-                chat.add(p);
-                plugin.MessageAPI(p, scEnabled);
-                return true;
+
+            StringBuilder msg = new StringBuilder();
+            String[] arrstring = Arrays.copyOfRange(args, 0, args.length);
+            int m = arrstring.length;
+            int m2 = 0;
+            while (m2 < m) {
+                String arg = arrstring[m2];
+                msg.append(arg);
+                msg.append(" ");
+                ++m2;
             }
-            if (plugin.getConfig().getBoolean("use-staff-chat") == true) {
-                sc.remove(p);
-                chat.remove(p);
-                plugin.MessageAPI(p, scDisabled);
-                return true;
-            } else {
-                sender.sendMessage(notEnabled);
+            String format = Color.addColor("staffchat.format", plugin).replace("%player%", sender.getName()).replace("%msg%", msg);
+            for (Player pl : Bukkit.getServer().getOnlinePlayers()) {
+                if(pl.hasPermission("msg.staffchat.see")) {
+                    pl.sendMessage(format);
+                    if(pl.hasPermission("msg.staffchat.actionbar") && plugin.getConfig().getBoolean("use-staff-chat-actionbar") && sender instanceof Player) {
+                        Player p = (Player) sender;
+                        String actionbar = Color.addColor("staffchat.actionbar-format", plugin).replace("%msg%", msg).replace("%player%", p.getName());
+                        Actionbar.sendActionBar(p, actionbar);
+                    }
+                }
             }
+            ConsoleCommandSender console = Bukkit.getServer().getConsoleSender();
+            console.sendMessage(Color.addColor(format));
             return true;
         }
         return true;

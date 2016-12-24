@@ -1,7 +1,9 @@
 package me.jdog.msg.other.commands;
 
 import me.jdog.msg.Main;
+import me.jdog.msg.other.Updater;
 import me.jdog.msg.other.network.type.ConnectionType;
+import me.jdog.murapi.api.Color;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -17,12 +19,8 @@ public class reload implements CommandExecutor {
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("message")) {
-            if (!(sender instanceof Player)) {
-                sender.sendMessage("Nope!");
-                return true;
-            }
             if (args.length == 0) {
-                plugin.MessageAPI(sender, "&bPlease add args! Accepted args: reload | help | motd | sv_version | online");
+                plugin.MessageAPI(sender, "&bPlease add args! Accepted args: reload | help | motd | sv_version | online | update");
                 return true;
             }
 
@@ -30,6 +28,23 @@ public class reload implements CommandExecutor {
                 this.plugin.reloadConfig();
                 plugin.MessageAPI(sender, "&bConfig has been reloaded!");
                 return true;
+            }
+
+            if (args[0].equalsIgnoreCase("update")) {
+                sender.sendMessage(Color.addColor("&eChecking for new updates..."));
+                Object[] updates = Updater.getLastUpdate();
+                if(updates.length == 2) {
+                    sender.sendMessage("====================================");
+                    sender.sendMessage(Color.addColor("&cMSG >>"));
+                    sender.sendMessage(Color.addColor("&eNew update found. &cINFO:"));
+                    sender.sendMessage(Color.addColor("&aNew version: " + updates[0]));
+                    sender.sendMessage(Color.addColor("&aYour current version: " + plugin.getDescription().getVersion()));
+                    sender.sendMessage(Color.addColor("&aNew: " + updates[1]));
+                    sender.sendMessage(Color.addColor("&dDownload: &rhttps://www.spigotmc.org/resources/msg-tested-on-1-8-1-7-10-1-10.31708/updates"));
+                    sender.sendMessage("====================================");
+                } else {
+                    sender.sendMessage(Color.addColor("&eNo updates found! You're all up to date."));
+                }
             }
 
             if (args[0].equalsIgnoreCase("help")) {
