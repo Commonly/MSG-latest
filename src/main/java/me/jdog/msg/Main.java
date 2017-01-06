@@ -1,5 +1,12 @@
 package me.jdog.msg;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.ListenerPriority;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.events.PacketEvent;
 import me.jdog.msg.gui.GuiPanel;
 import me.jdog.msg.other.Updater;
 import me.jdog.msg.other.commands.*;
@@ -9,7 +16,7 @@ import me.jdog.msg.other.network.ServerUtils;
 import me.jdog.murapi.api.Color;
 import me.jdog.murapi.api.cmd.CMDManager;
 import me.jdog.murapi.api.gui.GuiManager;
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -18,22 +25,22 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 
-import java.net.URL;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
 public class Main extends JavaPlugin {
-    private static Main instance;
+
+    // I try not to use instances but at this point it's kind of needed
     @Deprecated
+    private static Main instance;
+
     public static Main getInstance() {
         return instance;
     }
+
+    private ProtocolManager protocolManager;
 
     public ServerUtils serverUtils = ServerUtils.getInstance();
     public DataManager dataManager = DataManager.getInstance();
@@ -45,6 +52,7 @@ public class Main extends JavaPlugin {
         target.sendMessage(msg);
     }
 
+    // double method unneeded // all methods used it before-hand so i had to keep it ;-(
     public void MessageAPI(CommandSender sender, String msg) {
         msg = Color.addColor(msg);
         sender.sendMessage(msg);
@@ -71,23 +79,29 @@ public class Main extends JavaPlugin {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
-        Object[] updates = Updater.getLastUpdate();
+        Logger logger = this.getLogger();
         getLogger().info("Checking for updates...");
+        Object[] updates = Updater.getLastUpdate();
         if(updates.length == 2) {
             getLogger().info("Update found for MSG! https://www.spigotmc.org/resources/msg-tested-on-1-8-1-7-10-1-10.31708/updates");
         } else {
             getLogger().info("No updates found! All up to date.");
         }
-        Logger logger = this.getLogger();
-
         GuiManager.registerGui(0, new GuiPanel("Message Panel", 27));
         CMDManager.registerCommand(1, new GuiCommand());
         CMDManager.registerCommand(2, new Vote());
+        CMDManager.registerCommand(3, new ReplaceChat());
+        CMDManager.registerCommand(4, new Profanity());
 
         getCommand("mpanel").setExecutor(new CMDManager());
         getCommand("vote").setExecutor(new CMDManager());
+        getCommand("replacechat").setExecutor(new CMDManager());
+        getCommand("profanity").setExecutor(new CMDManager());
+
+        getServer().getPluginManager().registerEvents(new ChatEventOther(), this);
 
         this.eventList();
+        LanguageEvent.log.create();
         this.commandList();
         this.saveDefaultConfig();
         this.dataManager.setup(this);
@@ -97,7 +111,8 @@ public class Main extends JavaPlugin {
         }
         this.dataManager.getData().set("auto", Options.autoStaff);
         this.dataManager.saveData();
-
+        protocolManager = ProtocolLibrary.getProtocolManager();
+        tab();
         logger.info("Message has been enabled!");
     }
 
@@ -133,18 +148,7 @@ public class Main extends JavaPlugin {
                     return true;
                 }
 
-                StringBuilder msg2 = new StringBuilder();
-                @SuppressWarnings("unused")
-                String[] newArray = Arrays.copyOfRange(args, 1, args.length);
-                String[] arrstring = Arrays.copyOfRange(args, 1, args.length);
-                int m = arrstring.length;
-                int m2 = 0;
-                while (m2 < m) {
-                    String arg = arrstring[m2];
-                    msg2.append(arg);
-                    msg2.append(" ");
-                    ++m2;
-                }
+                String msg2 = StringUtils.join(args, ' ', 1, args.length);
 
                 String senderMsg = Color.addColor("msg.sendermsg", this).replace("%target%", target.getName()).replace("%sender%", sender.getName()).replace("%msg%", msg2);
                 String targetMsg = Color.addColor("msg.targetmsg", this).replace("%target%", target.getName()).replace("%sender%", sender.getName()).replace("%msg%", msg2);
@@ -166,16 +170,7 @@ public class Main extends JavaPlugin {
             }
 
             if (args.length >= 1) {
-                StringBuilder msg = new StringBuilder();
-                String[] msg2 = args;
-                int sendingSelf = msg2.length;
-                int target = 0;
-                while (target < sendingSelf) {
-                    String arg = msg2[target];
-                    msg.append(arg);
-                    msg.append(" ");
-                    ++target;
-                }
+                String msg = StringUtils.join(args, ' ', 0, args.length);
 
                 String notonlineRep = Color.addColor("msg.notonlinereply", this);
                 if(!reply.containsKey(sender.getName())) {
@@ -200,18 +195,10 @@ public class Main extends JavaPlugin {
         }
 
         if (cmd.getName().equalsIgnoreCase("mhelp")) { // Default user help.
-            if (!(sender instanceof Player)) {
-                sender.sendMessage("Command can only be used by a player.");
-                return true;
-            }
-            Player p = (Player) sender;
-            if (p.hasPermission("msg.help")) {
-                this.MessageAPI(p, "&bMessage help >>");
-                this.MessageAPI(p, "&b/msg (/m | /t | /tell) - Send a message to the specified person.");
-                this.MessageAPI(p, "&b/reply (/r) - Reply to the person you last messaged.");
-                this.MessageAPI(p, "&b/mhelp - Display message help.");
-            }
-            return true;
+            MessageAPI(sender, "&bMessage help >>");
+            MessageAPI(sender, "&b/msg (/m | /t | /tell) - Send a message to the specified person.");
+            MessageAPI(sender, "&b/reply (/r) - Reply to the person you last messaged.");
+            MessageAPI(sender, "&b/mhelp - Display message help.");
         }
 
         return true;
@@ -230,7 +217,7 @@ public class Main extends JavaPlugin {
         this.getCommand("staffchat").setExecutor(new StaffChat(this));
         this.getCommand("moptions").setExecutor(new Options(this));
         this.getCommand("togglechat").setExecutor(new ToggleChat(this));
-        //this.getCommand("socialspy").setExecutor(new SocialSpy(this));
+        //this.getCommand("socialspy").setExecutor(new SocialSpy(this)); // failed attempt at making a SocialSpy ;-( // FIXME: 1/3/17
     }
 
     private void eventList() {
@@ -243,11 +230,42 @@ public class Main extends JavaPlugin {
         pm.registerEvents(new EventDeath(this), this);
         pm.registerEvents(new EventSign(), this);
         pm.registerEvents(new EventInteract(), this);
-        //pm.registerEvents(new EventSpy(this), this);
+        //pm.registerEvents(new EventSpy(this), this); // failed attempt at making a SocialSpy ;-( // FIXME: 1/3/17
+        pm.registerEvents(new LanguageEvent(this), this);
     }
 
     private void callEvent(Event event) {
         Bukkit.getServer().getPluginManager().callEvent(event);
+    }
+
+    // poorly coded... trying to make it better bare with me ;-)
+    private void tab() {
+        if(!getConfig().getBoolean("tab.cancel")) return;
+        protocolManager.addPacketListener(new PacketAdapter(this, ListenerPriority.NORMAL, PacketType.Play.Client.TAB_COMPLETE) {
+            @Override
+            public void onPacketReceiving(PacketEvent e) {
+                // check for permission
+                if(!e.getPlayer().hasPermission("msg.tab")) {
+                    PacketContainer packet = e.getPacket();
+                    // the message
+                    String start = packet.getStrings().read(0);
+                    // check if it is a command by seeing if it starts with a '/'
+                    if(!start.startsWith("/")) return;
+                    if(getConfig().getBoolean("tab.first-param-only")) {
+                        // only block the first param
+                        if (start.contains(" ")) return;
+                    }
+                    // check if use-message is true
+                    if(getConfig().getBoolean("tab.use-message")) {
+                        // if so send them message
+                        String send = Color.addColor("tab.message", Main.getInstance());
+                        e.getPlayer().sendMessage(send);
+                    }
+                    // set it cancelled so the player doesn't see server commands.
+                    e.setCancelled(true);
+                }
+            }
+        });
     }
 
 }

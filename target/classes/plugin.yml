@@ -1,8 +1,20 @@
 name: MSG
-version: 2.2
+version: 2.3
+depend: [murAPI]
+softdepend: [ProtocolLib]
 main: me.jdog.msg.Main
 author: Muricans
 commands:
+  profanity:
+    permission: msg.profanity.lookup
+    permission-message: §cNo permission.
+    usage: /<command> <player>
+    aliases: [prof]
+  replacechat:
+    permission: msg.replacechat
+    permission-message: §cNo permission.
+    usage: /<command> <player>
+    aliases: [rchat]
   vote:
     usage: /<command>
     permission: msg.vote
@@ -104,3 +116,15 @@ permissions:
     children:
       msg.sign.create: true
       msg.sign.interact: true
+  msg.tab:
+    default: op
+  msg.profanity.bypass:
+    default: op
+  msg.profanity.alert:
+    default: op
+  msg.profanity.*:
+    default: op
+    children:
+      msg.profanity.bypass: true
+      msg.profanity.alert: true
+      msg.profanity.lookup: true

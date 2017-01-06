@@ -32,3 +32,38 @@ voting:
   links: # Voting links
     - '&chttp://muricans.ml'
   footer: '&f===================' # Voting footer
+replacechat: # ReplaceChat messages etc.
+  invalid-usage: '&cInvalid usage! /replacechat <player>' # No arguments found.
+  toggled-on: '&aReplaceChat toggled on for %target%' # Toggled on
+  toggled-off: '&cReplaceChat toggled off for %target%' # Toggled off
+  offline-player: '&c%target% is offline! Try a different player.' # Target is offline
+  words: # On chat if the player is being replacechatted by somebody replace whatever they say with these words. (Randomly)
+    - 'I like to eat cookies, they''re bad for health though :('
+    - 'I''m a dumb person, please ban me!'
+    - 'This server is using MSG, download it @ https://www.spigotmc.org/resources/msg-tested-on-1-8-1-7-10-1-10.31708/'
+    - 'Thanks for using MSG, please drop a rating if you liked it!'
+    - 'a'
+    - 'b'
+    - 'c'
+    - 'd'
+    - 'e'
+    - 'f'
+tab: # !ProtocolLib needed!
+  cancel: true # 1.8-1.10 only.
+  first-param-only: true # If the player adds more than 1 argument stop blocking it so they can tab complete player names etc.
+  use-message: true # If the above is true do you want to send a message to the player when they do it?
+  message: '&cPlease don''t try to steal our commands!' # If the above is true send them this message.
+profanity:
+  enable: true
+  alert: '&c%player%: &f%msg%'
+  warn-message: '&aPlease do not swear on our server, all staff have been alerted.'
+  blacklist:
+    - 'fuck'
+    - 'pussy'
+    - 'nigger'
+    - 'faggot'
+    - 'nigga'
+    - 'bitch'
+    - 'ass'
+  whitelist:
+    - 'glass'

@@ -9,7 +9,7 @@ import org.json.simple.JSONValue;
 import java.net.URL;
 
 /**
- * Created by Josh on 12/24/16.
+ * Created by Muricans on 12/24/16.
  */
 public class Updater {
     final static String VERSION_URL = "https://api.spiget.org/v2/resources/31708/versions?size=" + Integer.MAX_VALUE + "&spiget__ua=SpigetDocs";

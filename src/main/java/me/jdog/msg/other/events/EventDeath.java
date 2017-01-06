@@ -29,7 +29,7 @@ public class EventDeath implements Listener {
 
         if (p instanceof Player && k instanceof Player) {
 
-            String deathMessage = Color.addColor("death.death-message").replace("%killer%", k.getName()).replace("%player%", p.getName());
+            String deathMessage = Color.addColor("death.death-message", plugin).replace("%killer%", k.getName()).replace("%player%", p.getName());
 
             if (p.isDead()) {
                 e.setDeathMessage(null);

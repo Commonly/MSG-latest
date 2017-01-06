@@ -4,10 +4,12 @@ import me.jdog.msg.Main;
 import me.jdog.msg.other.Updater;
 import me.jdog.msg.other.network.type.ConnectionType;
 import me.jdog.murapi.api.Color;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
+
+import java.util.List;
 
 public class reload implements CommandExecutor {
 
@@ -20,13 +22,27 @@ public class reload implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("message")) {
             if (args.length == 0) {
-                plugin.MessageAPI(sender, "&bPlease add args! Accepted args: reload | help | motd | sv_version | online | update");
+                plugin.MessageAPI(sender, "&bPlease add args! Accepted args: reload | help | motd | sv_version | online | update | addword");
                 return true;
             }
 
             if (args[0].equalsIgnoreCase("reload")) {
                 this.plugin.reloadConfig();
                 plugin.MessageAPI(sender, "&bConfig has been reloaded!");
+                return true;
+            }
+
+            if(args[0].equalsIgnoreCase("addword")) {
+                if(args.length == 1) {
+                    sender.sendMessage(Color.addColor("&cPlease enter a sentence to add!"));
+                    return true;
+                }
+                List<String> words = plugin.getConfig().getStringList("replacechat.words");
+                String word = StringUtils.join(args, ' ', 1, args.length);
+                words.add(word);
+                plugin.getConfig().set("replacechat.words", words);
+                plugin.saveConfig();
+                sender.sendMessage(Color.addColor("&aAdded word &b'" + word + "'"));
                 return true;
             }
 
