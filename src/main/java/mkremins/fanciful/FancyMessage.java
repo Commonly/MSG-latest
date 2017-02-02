@@ -364,7 +364,7 @@ public class FancyMessage implements JsonRepresentedObject, Cloneable, Iterable<
 	 * @param replacements The replacements, in order, that will be used in the language-specific message.
 	 * @return This builder instance.
 	 */   /* ------------
-	public FancyMessage translationReplacements(final Iterable<? extends CharSequence> replacements){
+    public FancyMessage translationReplacements(final Iterable<? extends CharSequence> replacements){
 		for(CharSequence str : replacements){
 			latest().translationReplacements.add(new JsonString(str));
 		}

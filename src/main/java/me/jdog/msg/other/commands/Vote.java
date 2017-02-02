@@ -10,19 +10,21 @@ import org.bukkit.command.CommandSender;
  * Created by Muricans on 12/23/16.
  */
 public class Vote extends CMD {
+    private Main main;
 
-    public Vote() {
+    public Vote(Main main) {
         super("vote");
+        this.main = main;
     }
 
     @Override
     public boolean execute(CommandSender sender, Command command, String label, String[] args) {
-        String header = Color.addColor("voting.header", Main.getInstance());
+        String header = Color.addColor("voting.header", main);
         sender.sendMessage(header);
-        for(String links : Main.getInstance().getConfig().getStringList("voting.links")) {
+        for (String links : main.getConfig().getStringList("voting.links")) {
             sender.sendMessage(Color.addColor(links));
         }
-        String footer = Color.addColor("voting.footer", Main.getInstance());
+        String footer = Color.addColor("voting.footer", main);
         sender.sendMessage(footer);
         return false;
     }

@@ -3,7 +3,6 @@ package me.jdog.msg.other.events;
 import me.jdog.msg.Main;
 import me.jdog.murapi.api.Color;
 import mkremins.fanciful.FancyMessage;
-import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;

@@ -4,7 +4,6 @@ import com.connorlinfoot.bountifulapi.Actionbar;
 import me.jdog.msg.Main;
 import me.jdog.murapi.api.Color;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,6 +18,7 @@ public class StaffChat implements CommandExecutor {
     public static ArrayList<String> chat = new ArrayList<String>();
     public static ArrayList<String> sc = new ArrayList<String>();
     Main plugin;
+
     public StaffChat(Main pl) {
         plugin = pl;
     }
@@ -59,9 +59,9 @@ public class StaffChat implements CommandExecutor {
             }
             String format = Color.addColor("staffchat.format", plugin).replace("%player%", sender.getName()).replace("%msg%", msg);
             for (Player pl : Bukkit.getServer().getOnlinePlayers()) {
-                if(pl.hasPermission("msg.staffchat.see")) {
+                if (pl.hasPermission("msg.staffchat.see")) {
                     pl.sendMessage(format);
-                    if(pl.hasPermission("msg.staffchat.actionbar") && plugin.getConfig().getBoolean("use-staff-chat-actionbar") && sender instanceof Player) {
+                    if (pl.hasPermission("msg.staffchat.actionbar") && plugin.getConfig().getBoolean("use-staff-chat-actionbar") && sender instanceof Player) {
                         Player p = (Player) sender;
                         String actionbar = Color.addColor("staffchat.actionbar-format", plugin).replace("%msg%", msg).replace("%player%", p.getName());
                         Actionbar.sendActionBar(p, actionbar);

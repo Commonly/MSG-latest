@@ -1,14 +1,28 @@
 name: MSG
-version: 2.3
-depend: [murAPI]
+version: 2.4
 softdepend: [ProtocolLib]
 main: me.jdog.msg.Main
 author: Muricans
 commands:
-  profanity:
-    permission: msg.profanity.lookup
+  sounds:
+    permission: msg.togglesounds
     permission-message: §cNo permission.
-    usage: /<command> <player>
+  staffhide:
+  staff:
+    permission: msg.staff
+    permission-message: §cNo permission.
+  stafflist:
+    permission: msg.stafflist
+    permission-message: §cNo permission.
+  clearchat:
+    aliases: [cc]
+    usage: /<command> [reason]
+    permission: msg.clearchat
+    permission-message: §cNo permission.
+  profanity:
+    permission: msg.profanity
+    permission-message: §cNo permission.
+    usage: /<command> <args>
     aliases: [prof]
   replacechat:
     permission: msg.replacechat
@@ -95,6 +109,9 @@ permissions:
       msg.msg: true
       msg.reply: true
       msg.vote: true
+      msg.rules: true
+      msg.staff: true
+      msg.togglesounds: true
   msg.help:
     description: Help for message permission.
     default: true
@@ -117,14 +134,46 @@ permissions:
       msg.sign.create: true
       msg.sign.interact: true
   msg.tab:
+    description: Bypass the antitab system
     default: op
   msg.profanity.bypass:
+    description: Bypass the antiswear system
     default: op
   msg.profanity.alert:
+    description: Recieve alerts when people swear
     default: op
   msg.profanity.*:
+    description: All Profanity permissions.
     default: op
     children:
       msg.profanity.bypass: true
       msg.profanity.alert: true
+      msg.profanity: true
       msg.profanity.lookup: true
+      msg.profanity.whitelist: true
+      msg.profanity.blacklist: true
+  msg.profanity.blacklist:
+    default: op
+    description: Blacklist words from in-game
+  msg.profanity.whitelist:
+    default: op
+    description: Whitelist words from in-game
+  msg.clearchat.reason:
+    description: Give a reason when clearing the chat
+    default: op
+  msg.clearchat.*:
+    description: All clearchat permissions
+    default: op
+    children:
+      msg.clearchat.reason: true
+      msg.clearchat: true
+  msg.command-blocking.bypass:
+    default: op
+  msg.command-blocking.alert:
+    default: op
+  msg.command-blocking.*:
+    default: op
+    description: All command-blocking permissions.
+    children:
+      msg.command-blocking.bypass: true
+      msg.command-blocking.alert: true

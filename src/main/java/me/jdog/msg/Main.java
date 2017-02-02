@@ -15,10 +15,12 @@ import me.jdog.msg.other.events.*;
 import me.jdog.msg.other.network.ServerUtils;
 import me.jdog.murapi.api.Color;
 import me.jdog.murapi.api.cmd.CMDManager;
+import me.jdog.murapi.api.config.Config;
 import me.jdog.murapi.api.gui.GuiManager;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -27,25 +29,18 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-public class Main extends JavaPlugin {
-
-    // I try not to use instances but at this point it's kind of needed
-    @Deprecated
-    private static Main instance;
-
-    public static Main getInstance() {
-        return instance;
-    }
-
-    private ProtocolManager protocolManager;
-
+public final class Main extends JavaPlugin {
     public ServerUtils serverUtils = ServerUtils.getInstance();
     public DataManager dataManager = DataManager.getInstance();
     public Map<String, String> reply = new HashMap<>();
+    private ProtocolManager protocolManager;
+    private Updater updater = new Updater(this);
     private volatile boolean allowChat = true;
+    private static List<String> sounds;
 
     public void MessageAPI(Player target, String msg) {
         msg = Color.addColor(msg);
@@ -63,8 +58,8 @@ public class Main extends JavaPlugin {
         Bukkit.getServer().broadcastMessage(msg);
     }
 
-    public boolean depend() {
-        if(getServer().getPluginManager().getPlugin("murAPI")==null) {
+    private boolean depend() {
+        if (getServer().getPluginManager().getPlugin("murAPI") == null) {
             return false;
         } else {
             return false;
@@ -73,35 +68,47 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        instance = this;
-        if(depend()) {
+        if (depend()) {
             getLogger().severe("murAPI not found! Download it here: https://www.spigotmc.org/resources/murapi.32116/");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
         Logger logger = this.getLogger();
         getLogger().info("Checking for updates...");
-        Object[] updates = Updater.getLastUpdate();
-        if(updates.length == 2) {
+        Object[] updates = updater.getLastUpdate();
+        if (updates.length == 2) {
             getLogger().info("Update found for MSG! https://www.spigotmc.org/resources/msg-tested-on-1-8-1-7-10-1-10.31708/updates");
         } else {
             getLogger().info("No updates found! All up to date.");
         }
-        GuiManager.registerGui(0, new GuiPanel("Message Panel", 27));
-        CMDManager.registerCommand(1, new GuiCommand());
-        CMDManager.registerCommand(2, new Vote());
-        CMDManager.registerCommand(3, new ReplaceChat());
-        CMDManager.registerCommand(4, new Profanity());
+        GuiManager.registerGui("messagePanel", new GuiPanel("Message Panel", 27, this));
+        CMDManager.registerCommand(new GuiCommand());
+        CMDManager.registerCommand(new Vote(this));
+        CMDManager.registerCommand(new ReplaceChat(this));
+        CMDManager.registerCommand(new ClearChat(this));
+        CMDManager.registerCommand(new StaffCommand(this));
+        CMDManager.registerCommand(new StaffHide());
 
         getCommand("mpanel").setExecutor(new CMDManager());
         getCommand("vote").setExecutor(new CMDManager());
         getCommand("replacechat").setExecutor(new CMDManager());
-        getCommand("profanity").setExecutor(new CMDManager());
+        getCommand("clearchat").setExecutor(new CMDManager());
+        getCommand("stafflist").setExecutor(new StaffList(this));
+        getCommand("staff").setExecutor(new CMDManager());
+        getCommand("staffhide").setExecutor(new CMDManager());
 
-        getServer().getPluginManager().registerEvents(new ChatEventOther(), this);
+        getServer().getPluginManager().registerEvents(new ChatEventOther(this), this);
+        getServer().getPluginManager().registerEvents(new CommandEvent(this), this);
 
         this.eventList();
-        LanguageEvent.log.create();
+        getServer().getPluginManager().registerEvents(new LanguageEvent(this), this);
+        Config log = new Config(this, "log.yml");
+        Config staffList = new Config(this, "stafflist.yml");
+        staffList.create();
+        log.create();
+        CMDManager.registerCommand(new Profanity(this));
+        getCommand("profanity").setExecutor(new CMDManager());
+
         this.commandList();
         this.saveDefaultConfig();
         this.dataManager.setup(this);
@@ -111,14 +118,15 @@ public class Main extends JavaPlugin {
         }
         this.dataManager.getData().set("auto", Options.autoStaff);
         this.dataManager.saveData();
-        protocolManager = ProtocolLibrary.getProtocolManager();
-        tab();
+        if(getConfig().getBoolean("tab.cancel")) {
+            protocolManager = ProtocolLibrary.getProtocolManager();
+            tab();
+        }
         logger.info("Message has been enabled!");
     }
 
     @Override
     public void onDisable() {
-        instance = null;
         Logger logger = this.getLogger();
 
         logger.info("Message has been disabled!");
@@ -128,7 +136,7 @@ public class Main extends JavaPlugin {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("msg")) {
             String noargsMsg = Color.addColor("msg.noargsmsg", this);
-            if (args.length == 0) {
+            if (args.length == 0 || args.length == 1) {
                 this.MessageAPI(sender, noargsMsg);
                 return true;
             }
@@ -153,6 +161,9 @@ public class Main extends JavaPlugin {
                 String senderMsg = Color.addColor("msg.sendermsg", this).replace("%target%", target.getName()).replace("%sender%", sender.getName()).replace("%msg%", msg2);
                 String targetMsg = Color.addColor("msg.targetmsg", this).replace("%target%", target.getName()).replace("%sender%", sender.getName()).replace("%msg%", msg2);
                 callEvent(new EventMessageHandler(target));
+                if(sounds.contains(target.getUniqueId().toString()) && getConfig().getBoolean("sounds.enable")) {
+                    target.playSound(target.getLocation(), Sound.valueOf(getConfig().getString("sounds.soundToPlay")), 20.0F, 1.0F);
+                }
                 this.MessageAPI(target, targetMsg);
                 this.reply.put(sender.getName(), target.getName());
                 this.reply.put(target.getName(), sender.getName());
@@ -173,7 +184,7 @@ public class Main extends JavaPlugin {
                 String msg = StringUtils.join(args, ' ', 0, args.length);
 
                 String notonlineRep = Color.addColor("msg.notonlinereply", this);
-                if(!reply.containsKey(sender.getName())) {
+                if (!reply.containsKey(sender.getName())) {
                     this.MessageAPI(sender, notonlineRep);
                     return true;
                 }
@@ -186,6 +197,9 @@ public class Main extends JavaPlugin {
                 String replyMsg = Color.addColor("msg.replymsg", this).replace("%sender%", sender.getName()).replace("%target%", r.getName()).replace("%msg%", msg);
                 String replysenderMsg = Color.addColor("msg.replysendermsg", this).replace("%sender%", sender.getName()).replace("%target%", r.getName()).replace("%msg%", msg);
                 callEvent(new EventMessageHandler(r));
+                if(sounds.contains(r.getUniqueId().toString()) && getConfig().getBoolean("sounds.enable")) {
+                    r.playSound(r.getLocation(), Sound.valueOf(getConfig().getString("sounds.soundToPlay")), 20.0F, 1.0F);
+                }
                 this.MessageAPI(r, replyMsg);
                 callEvent(new EventMessageHandler(sender));
                 this.MessageAPI(sender, replysenderMsg);
@@ -199,6 +213,31 @@ public class Main extends JavaPlugin {
             MessageAPI(sender, "&b/msg (/m | /t | /tell) - Send a message to the specified person.");
             MessageAPI(sender, "&b/reply (/r) - Reply to the person you last messaged.");
             MessageAPI(sender, "&b/mhelp - Display message help.");
+        }
+
+        if(cmd.getName().equalsIgnoreCase("sounds")) {
+            if(sender instanceof Player && sender.hasPermission("msg.togglesounds")) {
+                if(!getConfig().getBoolean("sounds.enable")) {
+                    sender.sendMessage(Color.addColor("&c&lError! &r&7Sounds are not enabled on this server."));
+                }
+                sounds = dataManager.getData().getStringList("sounds");
+                if(sounds.contains(((Player) sender).getUniqueId().toString())) {
+                    sounds.remove(((Player) sender).getUniqueId().toString());
+                    sender.sendMessage(Color.addColor("sounds.toggled.off", this));
+                    dataManager.getData().set("sounds", sounds);
+                    dataManager.saveData();
+                    dataManager.reloadData();
+                    return true;
+                } else if (!sounds.contains(((Player) sender).getUniqueId().toString())) {
+                    sounds.add(((Player) sender).getUniqueId().toString());
+                    sender.sendMessage(Color.addColor("sounds.toggled.on", this));
+                    dataManager.getData().set("sounds", sounds);
+                    dataManager.saveData();
+                    dataManager.reloadData();
+                    return true;
+                }
+            }
+            dataManager.saveData();
         }
 
         return true;
@@ -230,8 +269,8 @@ public class Main extends JavaPlugin {
         pm.registerEvents(new EventDeath(this), this);
         pm.registerEvents(new EventSign(), this);
         pm.registerEvents(new EventInteract(), this);
+        pm.registerEvents(new SoundsFirstJoin(this), this);
         //pm.registerEvents(new EventSpy(this), this); // failed attempt at making a SocialSpy ;-( // FIXME: 1/3/17
-        pm.registerEvents(new LanguageEvent(this), this);
     }
 
     private void callEvent(Event event) {
@@ -240,25 +279,25 @@ public class Main extends JavaPlugin {
 
     // poorly coded... trying to make it better bare with me ;-)
     private void tab() {
-        if(!getConfig().getBoolean("tab.cancel")) return;
+        if (!getConfig().getBoolean("tab.cancel")) return;
         protocolManager.addPacketListener(new PacketAdapter(this, ListenerPriority.NORMAL, PacketType.Play.Client.TAB_COMPLETE) {
             @Override
             public void onPacketReceiving(PacketEvent e) {
                 // check for permission
-                if(!e.getPlayer().hasPermission("msg.tab")) {
+                if (!e.getPlayer().hasPermission("msg.tab")) {
                     PacketContainer packet = e.getPacket();
                     // the message
                     String start = packet.getStrings().read(0);
                     // check if it is a command by seeing if it starts with a '/'
-                    if(!start.startsWith("/")) return;
-                    if(getConfig().getBoolean("tab.first-param-only")) {
+                    if (!start.startsWith("/")) return;
+                    if (getConfig().getBoolean("tab.first-param-only")) {
                         // only block the first param
                         if (start.contains(" ")) return;
                     }
                     // check if use-message is true
-                    if(getConfig().getBoolean("tab.use-message")) {
+                    if (getConfig().getBoolean("tab.use-message")) {
                         // if so send them message
-                        String send = Color.addColor("tab.message", Main.getInstance());
+                        String send = ChatColor.translateAlternateColorCodes('&', getConfig().getString("tab.message"));
                         e.getPlayer().sendMessage(send);
                     }
                     // set it cancelled so the player doesn't see server commands.
@@ -267,5 +306,4 @@ public class Main extends JavaPlugin {
             }
         });
     }
-
 }
