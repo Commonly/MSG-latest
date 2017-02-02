@@ -15,14 +15,17 @@ public class reload implements CommandExecutor {
 
     private Main plugin;
 
+    private CommandSender sender;
+
     public reload(Main pl) {
         this.plugin = pl;
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        this.sender = sender;
         if (cmd.getName().equalsIgnoreCase("message")) {
             if (args.length == 0) {
-                plugin.MessageAPI(sender, "&bPlease add args! Accepted args: reload | help | motd | sv_version | online | update | addword");
+                plugin.MessageAPI(sender, "&bPlease add args! Accepted args: reload | help | motd | sv_version | online | update | addword | changelog");
                 return true;
             }
 
@@ -32,8 +35,8 @@ public class reload implements CommandExecutor {
                 return true;
             }
 
-            if(args[0].equalsIgnoreCase("addword")) {
-                if(args.length == 1) {
+            if (args[0].equalsIgnoreCase("addword")) {
+                if (args.length == 1) {
                     sender.sendMessage(Color.addColor("&cPlease enter a sentence to add!"));
                     return true;
                 }
@@ -48,8 +51,8 @@ public class reload implements CommandExecutor {
 
             if (args[0].equalsIgnoreCase("update")) {
                 sender.sendMessage(Color.addColor("&eChecking for new updates..."));
-                Object[] updates = Updater.getLastUpdate();
-                if(updates.length == 2) {
+                Object[] updates = new Updater(plugin).getLastUpdate();
+                if (updates.length == 2) {
                     sender.sendMessage("====================================");
                     sender.sendMessage(Color.addColor("&cMSG >>"));
                     sender.sendMessage(Color.addColor("&eNew update found. &cINFO:"));
@@ -64,13 +67,14 @@ public class reload implements CommandExecutor {
             }
 
             if (args[0].equalsIgnoreCase("help")) {
-                plugin.MessageAPI(sender, "&b&m---------------&r&aMSG&b&m---------------");
-                plugin.MessageAPI(sender, "&c/msg (aliases: m, t, tell)");
-                plugin.MessageAPI(sender, "&c/reply (aliases: r)");
-                plugin.MessageAPI(sender, "&c/mhelp - Display message help.");
-                plugin.MessageAPI(sender, "&c/staffchat - Enter staffchat room.");
-                plugin.MessageAPI(sender, "&c/mpanel - Message panel");
-                plugin.MessageAPI(sender, "&b&m---------------&r&aMSG&b&m---------------");
+                message("&a/Message >");
+                message(" • &cArguments >");
+                message("   • &bsv_version &e- &dReturns the servers version.");
+                message("   • &bonline &e- &dReturns the amount of players online.");
+                message("   • &bmotd &e- &dReturns the servers MOTD.");
+                message("   • &bupdate &e- &dChecks if MSG needs any updates.");
+                message("   • &breload &e- &dReloads the config.yml file.");
+                message("   • &baddword &e- &dAdds a word to the ReplaceChat list.");
                 return true;
             }
 
@@ -89,6 +93,17 @@ public class reload implements CommandExecutor {
                 return true;
             }
         }
+
+        if (args[0].equalsIgnoreCase("changelog")) {
+            message("&c2.4&7: &aAdded a command blocker + /staff to see online staff members and /stafflist to manage them.");
+            return true;
+        }
+
         return true;
     }
+
+    private void message(String msg) {
+        sender.sendMessage(Color.addColor(msg));
+    }
+
 }

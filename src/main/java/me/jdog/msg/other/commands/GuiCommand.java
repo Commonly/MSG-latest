@@ -14,11 +14,11 @@ public class GuiCommand extends CMD {
 
     @Override
     public boolean execute(CommandSender sender, Command command, String label, String[] args) {
-        if(!(sender instanceof Player)) {
+        if (!(sender instanceof Player)) {
             return true;
         }
         Player p = (Player) sender;
-        p.openInventory(GuiManager.getGui(0).inventory);
+        p.openInventory(GuiManager.getGui("messagePanel").inventory);
         return false;
     }
 }

@@ -1,5 +1,7 @@
 package me.jdog.msg.gui;
 
+import me.jdog.msg.Main;
+import me.jdog.murapi.api.Color;
 import me.jdog.murapi.api.gui.GuiBase;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -14,13 +16,14 @@ import java.util.List;
  * Created by Muricans on 11/17/16.
  */
 public class GuiPanel extends GuiBase {
-
     private static List<String> elore = new ArrayList<String>();
     private static List<String> rlore = new ArrayList<String>();
     private static List<String> slore = new ArrayList<String>();
+    private Main main;
 
-    public GuiPanel(String name, int size) {
+    public GuiPanel(String name, int size, Main main) {
         super(name, size);
+        this.main = main;
     }
 
     @Override
@@ -71,19 +74,20 @@ public class GuiPanel extends GuiBase {
     @Override
     public void click(ItemStack itemStack, Player player) {
         if (itemStack.hasItemMeta()) {
-            if (itemStack.getItemMeta().hasDisplayName()) {
-                String n = ChatColor.stripColor(itemStack.getItemMeta().getDisplayName());
-                if (n.equals("Join")) {
-                    player.performCommand("mo auto join");
-                }
-                if (n.equals("Leave")) {
-                    player.performCommand("mo auto leave");
-                }
-
-                if (n.equals("StaffChat")) {
-                    player.performCommand("sc");
-                }
-
+            switch (ChatColor.stripColor(itemStack.getItemMeta().getDisplayName())) {
+                case "Join":
+                    player.performCommand("moptions auto join");
+                    break;
+                case "Leave":
+                    player.performCommand("moptions auto leave");
+                    break;
+                case "StaffChat":
+                    if (main.getConfig().getBoolean("use-staff-chat")) {
+                        player.performCommand("staffchat");
+                    } else {
+                        player.sendMessage(Color.addColor("&cError: StaffChat is not enabled."));
+                    }
+                    break;
             }
         }
     }

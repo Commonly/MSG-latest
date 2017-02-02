@@ -1,6 +1,5 @@
 package me.jdog.msg.other.config;
 
-import me.jdog.msg.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;

@@ -13,8 +13,8 @@ import java.util.ArrayList;
  * Created by Muricans on 11/22/16.
  */
 public class SocialSpy implements CommandExecutor {
-    private Main plugin;
     public static ArrayList<String> ss = new ArrayList<>();
+    private Main plugin;
 
     public SocialSpy(Main pl) {
         plugin = pl;
@@ -22,13 +22,13 @@ public class SocialSpy implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if(command.getName().equalsIgnoreCase("socialspy")) {
-            if(!(sender instanceof Player)) {
+        if (command.getName().equalsIgnoreCase("socialspy")) {
+            if (!(sender instanceof Player)) {
                 sender.sendMessage("This command can only be executed by players, sorry!");
                 return true;
             }
             Player player = (Player) sender;
-            if(!ss.contains(player.getName())) {
+            if (!ss.contains(player.getName())) {
                 ss.add(player.getName());
                 String ssEnabled = Color.addColor("socialspy.enabled", plugin);
                 plugin.MessageAPI(player, ssEnabled);

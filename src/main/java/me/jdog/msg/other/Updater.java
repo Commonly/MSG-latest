@@ -14,12 +14,17 @@ import java.net.URL;
 public class Updater {
     final static String VERSION_URL = "https://api.spiget.org/v2/resources/31708/versions?size=" + Integer.MAX_VALUE + "&spiget__ua=SpigetDocs";
     final static String DESCRIPTION_URL = "https://api.spiget.org/v2/resources/31708/updates?size=" + Integer.MAX_VALUE + "&spiget__ua=SpigetDocs";
+    private static Main main;
 
-    public static Object[] getLastUpdate() {
+    public Updater(Main main) {
+        this.main = main;
+    }
+
+    public Object[] getLastUpdate() {
         try {
             JSONArray versionArray = (JSONArray) JSONValue.parseWithException(IOUtils.toString(new URL(String.valueOf(VERSION_URL))));
             Double lastVersion = Double.parseDouble(((JSONObject) versionArray.get(versionArray.size() - 1)).get("name").toString());
-            if(lastVersion > Double.parseDouble(Main.getInstance().getDescription().getVersion())) {
+            if (lastVersion > Double.parseDouble(main.getDescription().getVersion())) {
                 JSONArray updatesArray = (JSONArray) JSONValue.parseWithException(IOUtils.toString(new URL(String.valueOf(DESCRIPTION_URL))));
                 String updateName = ((JSONObject) updatesArray.get(updatesArray.size() - 1)).get("title").toString();
                 Object[] update = {lastVersion, updateName};

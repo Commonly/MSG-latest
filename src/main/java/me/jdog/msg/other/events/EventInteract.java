@@ -13,11 +13,11 @@ public class EventInteract implements Listener {
 
     @EventHandler
     public void onInteract(PlayerInteractEvent e) {
-        if(!(e.getAction() == Action.RIGHT_CLICK_BLOCK))
+        if (!(e.getAction() == Action.RIGHT_CLICK_BLOCK))
             return;
-        if(e.getClickedBlock().getState() instanceof Sign) {
+        if (e.getClickedBlock().getState() instanceof Sign) {
             Sign sign = (Sign) e.getClickedBlock().getState();
-            if(sign.getLine(0).equalsIgnoreCase("§8[§cStaffChat§8]") && e.getPlayer().hasPermission("msg.sign.interact"))
+            if (sign.getLine(0).equalsIgnoreCase("§8[§cStaffChat§8]") && e.getPlayer().hasPermission("msg.sign.interact"))
                 e.getPlayer().performCommand("sc");
         }
     }

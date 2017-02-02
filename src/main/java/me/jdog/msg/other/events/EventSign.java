@@ -13,8 +13,8 @@ public class EventSign implements Listener {
     @EventHandler
     public void onSignCreate(SignChangeEvent e) {
         Player player = e.getPlayer();
-        if(player.hasPermission("msg.sign.create")) {
-            if(e.getLine(0).equalsIgnoreCase("[sc]") || e.getLine(0).equalsIgnoreCase("[staffchat]")) {
+        if (player.hasPermission("msg.sign.create")) {
+            if (e.getLine(0).equalsIgnoreCase("[sc]") || e.getLine(0).equalsIgnoreCase("[staffchat]")) {
                 e.setLine(0, "§8[§cStaffChat§8]");
                 e.setLine(1, "§aClick to toggle");
                 e.setLine(2, "§aStaffChat");

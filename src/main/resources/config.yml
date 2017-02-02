@@ -19,6 +19,8 @@ staffchat: # Staffchat options
 chat: # Chat options
   disabled: '&c&lChat was disabled by %sender%!' # Chat disabled
   enabled: '&c&lChat was enabled by %sender%!' # Chat enabled
+  clearchat-message-noargs: '&c%sender% has cleared the chat.' # No reason was given
+  clearchat-message: '&c%sender% has cleared the chat for %reason%'
 json: # JSON options
   use-welcome-message: false # Use the welcome message (true or false)
   json-welcome: '&cWelcome to our server %player%!' # When the player joins they recieve this message
@@ -55,15 +57,45 @@ tab: # !ProtocolLib needed!
   message: '&cPlease don''t try to steal our commands!' # If the above is true send them this message.
 profanity:
   enable: true
+  block: true
   alert: '&c%player%: &f%msg%'
   warn-message: '&aPlease do not swear on our server, all staff have been alerted.'
   blacklist:
-    - 'fuck'
-    - 'pussy'
-    - 'nigger'
-    - 'faggot'
-    - 'nigga'
-    - 'bitch'
-    - 'ass'
+  - 'fuck'
+  - 'pussy'
+  - 'dick'
+  - 'vagina'
+  - 'penis'
+  - 'fag'
+  - 'hitler'
+  - 'nazi'
+  - 'kkk'
+  - 'nigger'
+  - 'faggot'
+  - 'nigga'
+  - 'bitch'
+  - 'ass'
   whitelist:
-    - 'glass'
+  - 'glass'
+  - 'mass'
+  - 'bass'
+command-blocking:
+  enable: true
+  alert: true
+  warn-message: '&aThat command is blocked, sorry.'
+  alert-message: '&c%player%: &f%msg%'
+  blacklist:
+  - 'plugins'
+  - 'pl'
+  - '?'
+  - 'bukkit:help'
+staff:
+  header: '&e==================='
+  group: '&c- %group%'
+  footer: '&e==================='
+sounds:
+  enable: true
+  soundToPlay: LEVEL_UP
+  toggled:
+    on: '&aSounds toggled on.'
+    off: '&cSounds toggled off.'
